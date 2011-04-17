@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+i=0;
+cut -s -f 1,4,5   ../data/miRBase/cel/cel.gff | 
+	while read c s e; do 
+	        i=$(($i+1));
+	        echo ">$i";
+		./el2seq.pl -c chr$c -s $(($s+70)) -e $e; 
+	done;
