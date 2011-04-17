@@ -1,0 +1,13 @@
+make sure to do
+  export PATH=$PATH:/afs/andrew.cmu.edu/usr19/wforan1/project/bin
+
+./bin/		external programs (or bash wrappers for them)
+
+./src/		downloaded programs (which have bash wrappers in ./bin.)
+
+./data/ 	genome, miRBase ( and reads in the future maybe)
+
+./scripts/	Potential dir for any glue scripts
+
+./output/	Output of these scripts
+
