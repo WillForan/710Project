@@ -9,7 +9,7 @@
 BASE="/afs/andrew.cmu.edu/usr/wforan1/project/"
 OUTFILE=${BASE}outputs/novomir-celgans-test.txt
 ELFILE=${BASE}outputs/hairpin_cel_info.fa
-ELFILE=${BASE}outputs/random_sequences.fa
+RANDFILE=${BASE}outputs/random_sequences.fa
 
 function find_elgans(){
     
@@ -19,13 +19,23 @@ function find_elgans(){
     cat $ELFILE
 }
 function random_seq(){
-    
     if [ ! -e $RANDFILE ]; then
+       echo "generating random file";
+       CHROM=(I II III IV V X M);
        for i in {1..175}; do
+          echo -n ".";
+          c=${CHROM[$(($RANDOM%7))]};
+          chrm=${BASE}data/genome/cel/chr$c.fa #random chromosome
+          chrmwc=$(( $(wc -l $chrm | cut -f 1 -d ' ') -1));
           echo ">$i" >> $RANDFILE;
+          #sed -n $((2+$RANDOM%$chrmwc))p $chrm >> $RANDFILE #random line
+          sed -n $((2+$RANDOM%$chrmwc))p $chrm >>  $RANDFILE #random line
+          #hairpins: smallest 54, longest 117, avg 90 --  cut -s -f 4,5 cel.gff |awk '{print $2-$1}'|sort -n| uniq -c
+          s=$((1+$RANDOM%($chrmwc*50)));
+          ${BASE}scripts/el2seq.pl -c chr$c -s $(($s)) -e $(($s+55+$RANDOM%60)) >> $RANDFILE;
+
        done
     fi
-    cat $RANDFILE
 }
 
 function prepair_fasta(){
@@ -51,10 +61,16 @@ function to_output(){
 echo -e "\n$(date)" >> $OUTFILE 
 
 if [ "$1 x" != " x" ]; then 
+
+    random_seq
     echo "with arguments: $@" | tee -a $OUTFILE;
     tmpfile=$(mktemp);
     find_elgans | prepair_fasta 0 0 > $tmpfile 
+    echo -en "miRBase:\t" | tee -a $OUTFILE;
     novomir $@ -f $tmpfile | to_output;
+    echo -en "random:\t" | tee -a $OUTFILE;
+    novomir $@ -f $RANDFILE | to_output;
+
     exit;
 fi
 
