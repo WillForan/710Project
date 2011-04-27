@@ -6,6 +6,7 @@ use strict; use warnings;
 #
 #
 open my $genefile, '/afs/andrew.cmu.edu/usr/wforan1/project/data/CDS/plasmoSorted.txt' or die "Cannot read gene file: $!\n";
+#open my $genefile, 'tmptestannot' or die "Cannot read gene file: $!\n";
 
 #id label 
 my $id=0;
@@ -24,6 +25,7 @@ sub openchr{
     close($genome) if($genome);
     my $chr=shift;
     open $genome, "/afs/andrew.cmu.edu/usr/wforan1/project/data/genome/chr$chr.fa" or die "Cannot read chr$chr.fa: $!\n";
+    #open $genome, "tmptestseq" or die "Cannot read chr$chr.fa: $!\n";
     scalar(<$genome>); #read first line (not part of seq)
     $genpos=1;
     $gene_chr=$chr;
@@ -36,7 +38,7 @@ openchr $gene_chr;
 #for each line
 while(<$genefile>){
  #line must be the right sense and have an assocated chrome
- next if(!m/$sense$/ || !m/Pf3D7_0+(\d+)/);
+ next if(!m/$sense$/ || !m/Pf3D7_0*(\d+)/);
  my $chrom=$1;
  
  #make sure were reading the right file;
@@ -67,14 +69,15 @@ while(<$genefile>){
    #print it if its before start
    print $nt if($genpos<$start);
 
-   #print but don't count newlines
-   next if $nt eq "\n";
-   $genpos++;
+   #print but don't count newlines (or any other chacter not correct
+   $genpos++ if $nt =~ /[ATGC]/;
+   
  }
 # $genpos=$end+1;
 
 
 }
+print "\n";
 close $genome;
 close $genefile;
 

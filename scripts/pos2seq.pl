@@ -5,8 +5,8 @@ use POSIX;
 #use Data::Dumper;
 
 #where the bychrom fasta files are
-#TODO this should work outside of wfo../pf5
-my $BASE='/afs/andrew.cmu.edu/usr19/wforan1/project/data/genome/';
+my $BASE='/afs/andrew.cmu.edu/usr/wforan1/project/data/genome/';
+my $linesize=60;
 my $rev=0;
 
 #get what to do
@@ -36,16 +36,16 @@ open my $cFILE, "$BASE$chrm.fa" or die "Cannot open $chrm.fa file: $!\n";
 my $offset=length(<$cFILE>);
 
 #extra byte(newline) ever 50 chars + start  + $offset - starts at 1 not 0
-my $pos=floor($start/50) + $start + $offset - 1;
+my $pos=floor($start/$linesize) + $start + $offset - 1;
 
 #difference in positions
 my $diff=$end-$start;
 
 #extra byte every 50 + actual diff
-my $len=floor($diff/50)+$diff;
+my $len=floor($diff/$linesize)+$diff;
 
 #add one if there is an extra newline to overcome (ie. compansate for not starting at beg. of line)
-$len+=1 if ($end%50<$start%50);
+$len+=1 if ($end%$linesize<$start%$linesize);
 
 #get the file to the start
 seek($cFILE,$pos,SEEK_SET);
