@@ -1,10 +1,21 @@
 #!/usr/bin/env bash
 
+PROJECTDIR='/afs/andrew.cmu.edu/usr19/wforan1/project/';
+
 if [ ! -n "$1" ]; then
  echo "$0 srnaloopoutput.txt"
  exit;
 fi
 
+function blastit(){
+    seq=$1;
+    id=$2;
+    echo $seq tr ATCG TAGC|rev |
+     blastn -db $PROJECTDIR/data/blastdbs/pf7 -dust no -word_size $(($len/3 -2)) |
+     $PROJECTDIR/scripts/parseBlast.pl ${#seq} $id
+}
+#parse srnaloop out to: id pos length score seq1 seq2
+# then unstutter (remove matches within 15 of the next match)
 perl -ne 'chomp; 
         BEGIN{$name; $pos; $len; $score;$mirna;$mis}
 	if(m/Name: (.*)/){$name=$1;}
@@ -15,7 +26,7 @@ perl -ne 'chomp;
 	elsif(m/\s([UAGC-]+)/){$mis=$1; $mis=~tr/U-/T/d;
 	  print "$name $pos $len $score $mirna $mis\n"}
 	else{ }
-	' $1 |sort -k 1,1n -k 2,2n -k 6,6n  | 
+	' $1 |sort -k 1,1n -k 2,2n -k 6,6n  |  #10;chr1:66050-71857 5131 75 30 TATA... ATGTA...
 perl -ne '
 INIT{ @line=("initialization",0,0,0,0); $end=0;  $dist=15;}
   my @newline = split /\s/;
@@ -31,5 +42,8 @@ INIT{ @line=("initialization",0,0,0,0); $end=0;  $dist=15;}
     #do nothing?
     #but update end; done for all
   }
-  $end=$line[1];
-'
+  $end=$line[1];' | #blast these for targets
+head -n1 |while read id pos len score mirna mirstar; do
+ blastit $mirna "$id-$pos"
+ blastit $mirstar "$id-*$pos"
+done

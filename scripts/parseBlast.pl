@@ -5,8 +5,8 @@ die "Usage: $0 seq_length miRNA_pos\n" if(!$ARGV[1]);
 
 my $LEN=shift;
 my $POS=shift;
-my $var=5; #set to 1 for exact length only
-my $per=95;
+my $var=2; #set to 1 for exact length only
+my $per=98;
 
 my $chr=0;
 my $start=0;
