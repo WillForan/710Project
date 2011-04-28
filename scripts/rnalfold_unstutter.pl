@@ -3,8 +3,8 @@ use strict; use warnings;
 
 #fix shutttering 
 # i.e.
-#chrI:100617-100705	-21.10	88
-#chrI:100619-100702	-20.20	83
+#1500	chrI:100617-100705	-21.10	88
+#1530	chrI:100619-100702	-20.20	83
 #
 #
 #
@@ -21,7 +21,7 @@ while(<>){
   	($left_end+$DIST<$newline[1] && $right_end+$DIST<$newline[2])    
     ){
    #print join(" ",@line),"\n" unless $line[0] eq 'init';
-   print "chr$line[0]:$line[1]-$line[2]\t-$line[4]\t$line[5]\n" unless $line[0] eq 'init';
+   print "chr$line[0]:$line[1]-$line[2]",join("\t",@line[3..$#line]),"\n" unless $line[0] eq 'init';
    #print $oldline, "\n" unless $line[0] eq 'init';
    @line=@newline; #update line b/c its a new region
   } 

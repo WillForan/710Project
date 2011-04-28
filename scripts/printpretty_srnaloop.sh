@@ -11,7 +11,7 @@ function blastit(){
     seq=$1;
     id=$2;
     echo $seq tr ATCG TAGC|rev |
-     blastn -db $PROJECTDIR/data/blastdbs/pf7 -dust no -word_size $(($len/3 -2)) |
+     blastn -db $PROJECTDIR/data/blastdbs/plasmoUTRs -dust no -word_size $(($len/3 -2)) |
      $PROJECTDIR/scripts/parseBlast.pl ${#seq} $id
 }
 #parse srnaloop out to: id pos length score seq1 seq2
@@ -43,7 +43,7 @@ INIT{ @line=("initialization",0,0,0,0); $end=0;  $dist=15;}
     #but update end; done for all
   }
   $end=$line[1];' | #blast these for targets
-head -n1 |while read id pos len score mirna mirstar; do
+while read id pos len score mirna mirstar; do
  blastit $mirna "$id-$pos"
  blastit $mirstar "$id-*$pos"
 done

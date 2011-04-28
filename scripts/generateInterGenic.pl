@@ -41,8 +41,9 @@ for my $strand ('\(\+\)','\(\-\)'){
     #for each line
     while(<$annoteFH>){ 
      #line must be the right sense and have an assocated chrome
-     next if(!m/$strand$/ || !m/Pf3D7_0*(\d+)/);
+     next if(!m/$strand$/ || !m/Pf3D7_(\d+)/);
      my $chrom=$1;
+     $chrom=~s/0//;
      
      #make sure were reading the right file;
      if($chrom!=$gene_chr){
@@ -71,6 +72,7 @@ for my $strand ('\(\+\)','\(\-\)'){
      while($genpos<=$end ) {
        #read in nt if none are cached (possible inf. loop here if input not formated well)
        @nts=split //, <$genome> if($#nts < 0 && !eof($genome));
+       last if eof($genome);
 
        my $nt = shift @nts;
 

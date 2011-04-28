@@ -12,11 +12,14 @@ use strict; use warnings; use File::stat; use Switch;
 use POSIX;
 
 print $ARGV[0], "\n";
+my $outpath = "/afs/andrew.cmu.edu/usr24/jvendrie/Genomics2011/bridge/stats/"; 
 if( @ARGV != 2 || ($ARGV[1] != 1 && $ARGV[1] != 2))
 {
     print "USAGE: ./getLengthDist predictions_file, genome\n";
     print "for genome, 1 = p. falciparum, 2 = c. elegans \n";
     print "note that this script is directory dependent\n";
+    print "if you are using plasmo, prolly want to do ./exe srna_unstuttered_in_bridge_dir 1\n";
+    print "if you are using c elegans, want to do ./exe file_to_be_created 2\n";
     exit;
 }
 
@@ -24,11 +27,11 @@ my $outfile = "";
 
 if($ARGV[1] == 1)
 {
-	$outfile = "p.f.random_seq.txt";
+	$outfile = $outpath . "p.f.random_seq.txt";
 }
 elsif($ARGV[1] == 2)
 {
-	$outfile = "c.e.random_seq.txt";
+	$outfile = $outpath . "c.e.random_seq.txt";
 }
 else
 {
@@ -67,15 +70,15 @@ while(<FILE>)
 #	print "$key: $map{$key} \n";
 #}
 
-
+my $counter = 0;
 foreach my $key(sort keys %map)
 {
 	for( my $i = 0; $i < $map{$key} ; $i++)
-	{
-		print "seq length is $key, genome is $ARGV[1], outfile is $outfile\n";
+	{	
+		$counter++;
+		print "seq length is $key, genome is $ARGV[1], seqNum $counter\n";
 		system("/usr/bin/perl ./randomStuff.pl $key $ARGV[1] >> $outfile");
-		sleep(3);
+		#sleep(3);
 	}
 }
-
 
