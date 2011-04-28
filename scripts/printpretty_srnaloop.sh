@@ -15,4 +15,21 @@ perl -ne 'chomp;
 	elsif(m/\s([UAGC-]+)/){$mis=$1; $mis=~tr/U-/T/d;
 	  print "$name $pos $len $score $mirna $mis\n"}
 	else{ }
-	' $1 #|sort -k 1,1n -k 2,2n -k 6,6n 
+	' $1 |sort -k 1,1n -k 2,2n -k 6,6n  | 
+perl -ne '
+INIT{ @line=("initialization",0,0,0,0); $end=0;  $dist=15;}
+  my @newline = split /\s/;
+
+  if($line[0] ne $newline[0] || $end+$dist<$newline[1]){
+   print join(" ",@line),"\n" unless $line[0] eq "initialization";
+   @line=@newline; #update line b/c its a new region
+  } 
+  elsif($newline[2]>$line[2]){
+    @line=@newline; #update line b/c this has a better score
+  }
+  else{
+    #do nothing?
+    #but update end; done for all
+  }
+  $end=$line[1];
+'
