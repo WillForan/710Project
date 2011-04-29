@@ -5,7 +5,7 @@ use strict; use warnings;
 #eg ./generateInterGenic.pl > ../bridge/plasmo_intergenic.fasta
 #
 #
-my $annotationfile='/afs/andrew.cmu.edu/usr/wforan1/project/data/CDS/plasmoSorted.txt';
+my $annotationfile='/afs/andrew.cmu.edu/usr/wforan1/project/data/CDS/plasmoSorted_numonly.txt';
 my $chromprefix='/afs/andrew.cmu.edu/usr/wforan1/project/data/genome/chr';
 #id label 
 my $id=0;
@@ -28,10 +28,11 @@ sub openchr{
     scalar(<$genome>); #read first line (not part of seq)
     $genpos=1;
     $gene_chr=$chr;
+    print STDERR $chr,"\n";
 }
 
 
-for my $strand ('\(\+\)','\(\-\)'){
+for my $strand ('+','-'){
 
     open my $annoteFH, $annotationfile  or die "Cannot read gene file: $!\n";
     $gene_chr=1;
@@ -41,12 +42,12 @@ for my $strand ('\(\+\)','\(\-\)'){
     #for each line
     while(<$annoteFH>){ 
      #line must be the right sense and have an assocated chrome
-     next if(!m/$strand$/ || !m/Pf3D7_(\d+)/);
-     my $chrom=$1;
-     $chrom=~s/0//;
+     my ($chrom,$start, $end,$gene_strand) = split /\s/;
+     next if($strand ne $gene_strand);
+     #print $chrom,":", $start,"-",$end,"\n";
      
      #make sure were reading the right file;
-     if($chrom!=$gene_chr){
+     if($chrom ne $gene_chr){
 	#print the rest of the genome as one id
 	$id++;
 	print "\n>$id;chr$gene_chr:$genpos-rest\n";
@@ -56,12 +57,10 @@ for my $strand ('\(\+\)','\(\-\)'){
 	openchr $chrom 
      }
 
-     my ($start, $end) = (split /[ :-]/)[5,8];
-     #print $chrom,":", $start,"-",$end,"\n";
 
      #start new fa ID
      $id++;
-     if($strand eq '\(\-\)'){
+     if($strand eq '-'){
 	 print ">$id;chr$chrom:$start-$genpos\n";
      }
      else{ 
@@ -69,23 +68,25 @@ for my $strand ('\(\+\)','\(\-\)'){
      }
 
     # #print all the nts up to the genomic region
-     while($genpos<=$end ) {
+     while($genpos<=$end) {
        #read in nt if none are cached (possible inf. loop here if input not formated well)
        @nts=split //, <$genome> if($#nts < 0 && !eof($genome));
        last if eof($genome);
 
        my $nt = shift @nts;
 
+       next if !$nt;
+
        #print it if its before start
        #print $nt if($genpos<$start);
-       $intergen.=$nt;
-
+       $intergen.=$nt if $genpos < $start;
        #print but don't count newlines (or any other chacter not correct
-       $genpos++ if $nt =~ /[ATGC]/;
+       #$genpos++ if $nt =~ /[ATGCNnatgc]/; #what about N's and other weird things?
+       $genpos++ unless $nt eq "\n";
        
      }#end of intergen region
-     if($strand eq '\(\-\)'){
-       $intergen =~ tr/ATGC/TACG/;
+     if($strand eq '-'){
+       $intergen =~ tr/ATGCatgc/TACGtacg/;
        $intergen = reverse $intergen;
      }
      print $intergen,"\n";
