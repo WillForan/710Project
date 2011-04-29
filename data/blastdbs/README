@@ -1,0 +1,4 @@
+
+makeblastdb -dbtype nucl -out pf7     -in ../genome/pf71.fasta
+makeblastdb -dbtype nucl -out mirbase -in ../miRBase/hairpin.fa 
+makeblastdb -dbtype nucl -out plasmoUTRs -in ../genome/plasmoUTRs.fa

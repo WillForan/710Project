@@ -1,0 +1,4 @@
+miRNA sequences downloaded from http://www.mirbase.org/ftp.shtml
+gunzip'ed mature.fa.gz and hairpin.fa.gz
+
+makeblastdb -in hairpin.fa -title hairpin -out hairpin -dbtype nucl

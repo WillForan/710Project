@@ -1,0 +1,39 @@
+Pipeline and Utilities 
+710 Project
+jvendrie, wforan1
+
+#########srnaloop pipeline##################
+1) _getAnnotations.sh:		download and parse genome+annotations
+2) generateInterGenic.pl:	create intergenic fasta
+3) miRNA canidates:		srnaloop -s 30 -sf infile -o outfile	
+				srnaloop -s 30 -sf plasmo_intergenic.fasta -o srnal_s30.txt 
+				srnaloop -s 30 -sf cel_intergenic.fasta    -o srnal_s30.txt 
+4) srna_display_results.sh	run sranloop parser
+5) srna_unstutter.pl		unstutter output ---miRNA candidates
+6) ??				generate random seqs of same length
+
+
+#######candidate pipeline#######
+7) blast miRBase, mircheck
+
+8) blast genome for reverse complement, maybe other target prediction software
+
+9) report target coverage per stage
+
+##### Description of all scripts
+
+breakbychrom.sh		 -- create chr*.fa from pf7.fa
+cel_srnaloop.sh		 -- run srnaloop on each chromosome of c. elgans	
+el2seq.pl		 -- get seq from position of c. elgans
+freq_hairpin_length.sh	 -- get freq of lengths in miRBase hairpin fa
+generateInterGenic.pl	 -- make intergenic region fasta file given genome and gene annotation (plasmo)
+getElegansFromMiRBase.sh -- generate celgans_hairpins from miRbase
+mirnaPrecits.sh		 -- srna usage examle
+pos2seq.pl		 -- get seq from position of p. falc.
+randomStuff.pl		 -- get seq from position of either organism (c ela, p fal)
+readstuff.pl		 -- count sequences?
+RNALfold_wrap.sh	 -- Run RNALfold on celg
+_getAnnotations.sh 	 -- history of how gene annotation was aquired (c ela, p fal)
+srna_display_results.sh	 -- parse srna results to eye friendly and scripts
+srna_unstutter.pl	 -- pick best read from stuttered reads
+test-novomir.sh		 -- novomir stats and param options
