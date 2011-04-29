@@ -24,7 +24,7 @@ my ($chrm, $start,$end);
 if(defined($opt{'c'}) && defined($opt{'s'}) && defined($opt{'e'}) ) {
     $chrm=$opt{'c'}; $start=$opt{'s'}; $end=$opt{'e'};
 }
-elsif($#ARGV[0] && ($ARGV[0]=~m/(.*):(.*)-(.*)/) ) {
+elsif($ARGV[0] && ($ARGV[0]=~m/(.*):(.*)-(.*)/) ) {
      $chrm=$1;  $start=$2;  $end=$3;
      $chrm=~s/chr/chr/i;
 }
