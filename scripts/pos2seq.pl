@@ -12,7 +12,7 @@ my $rev=0;
 #get what to do
 use Getopt::Std;
 my %opt=();
-getopts('c:s:e');
+getopts('c:s:e',\%opt);
 my ($chrm, $start,$end);
 if(defined($opt{'c'}) && defined($opt{'s'}) && defined($opt{'e'}) ) {
     $chrm=$opt{'c'}; $start=$opt{'s'}; $end=$opt{'e'};
@@ -27,8 +27,9 @@ else {
 
 #if is reverse
 if($start>$end){
-    $start=$3;
-    $end=$2;
+    my $tmp=$start;
+    $start=$end;
+    $end=$tmp;
     $rev=1;
 }
 open my $cFILE, "$BASE$chrm.fa" or die "Cannot open $chrm.fa file: $!\n";
