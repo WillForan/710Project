@@ -59,12 +59,12 @@ read($cFILE,my $seq, $len+1,0);
 close($cFILE);
 
 #make presenentable
-$seq=uc($seq);
+#$seq=uc($seq);
 $seq=~s/\n//g;
 
 #tr and rev if is antisense
 if($rev) {
-    $seq=~tr/ATGC/TACG/;
+    $seq=~tr/ATGCatgc/TACGtacg/;
     $seq=reverse $seq;
 }
 
