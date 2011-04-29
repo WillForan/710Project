@@ -18,7 +18,7 @@ function posFromSrnaloopOutput(){
 miRNASize=22
 #blast for miRNA targets
 posFromSrnaloopOutput $miRNASize | head |while read pos len; do
- $PROJECTDIR/scripts/pos2seq.pl $pos | tr ATCG TAGC|rev |
+ $PROJECTDIR/scripts/seq.pl $pos | tr ATCG TAGC|rev |
  blastn -db $PROJECTDIR/data/blastdbs/pf7 -dust no -word_size $(($len/3 -2)) |
  ../scripts/parseBlast.pl 22 $pos
 done
