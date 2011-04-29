@@ -1,25 +1,42 @@
 #!/usr/bin/env perl
 use strict; use warnings;
+use Switch;
+use Getopt::Std;
 #
-# generate genome without genetic material
-#eg ./generateInterGenic.pl > ../bridge/plasmo_intergenic.fasta
+# generate genome without genetic material in two passes (+ and -)
+# e.g.
+#    for org in {plasmo,celg};   do  ./generateInterGenic.pl -o $org > ../bridge/${org}_intergenic.fasta;  done
+# expects chr seperated fasta genome within a directgory
+# and notation file like:
+# 	chrom	start	end	strand
+#e.g	I	100	300	+
 #
-#
-my $annotationfile='/afs/andrew.cmu.edu/usr/wforan1/project/data/CDS/plasmoSorted_numonly.txt';
-my $chromprefix='/afs/andrew.cmu.edu/usr/wforan1/project/data/genome/chr';
+# location of gene annotation file
+my $annotationfile='/afs/andrew.cmu.edu/usr/wforan1/project/data/CDS/';#plasmoSorted_numonly.txt
+# location of genome chromosome file
+my $chromprefix='/afs/andrew.cmu.edu/usr/wforan1/project/data/genome/';#chr
+#chrom to start with (1 for plasmo, I for cel)
+my $default_chrom=1;
+
+#what organism
+my %org=('o'=>'');
+getopts('o:',\%org);
+switch ($org{'o'}) {
+  case /plas/ { $annotationfile.='plasmoSorted_numonly.txt'; $chromprefix.="chr"; }
+  case /elg/  { $annotationfile.='celSorted.txt';            $chromprefix.="cel/chr"; $default_chrom='I'}
+  else { print STDERR "USAGE: $0 -o [plasmodium or celgance]\n(doing both will cause problems :) )\n";exit }
+}
+
 #id label 
 my $id=0;
-#start with + reads
-#my $sense='\(\+\)';
-#start on chr1
-my $gene_chr;
 
-#need genome and genpos to be globalish
+#need genome and genpos to be globalish for following functino to work as expected
 my $genome;
 my $genpos;
+my $gene_chr;
 my @nts;
 
-#open a new chromosome
+#open a new chromosome, set vars
 sub openchr{
     close($genome) if($genome);
     my $chr=shift;
@@ -28,14 +45,14 @@ sub openchr{
     scalar(<$genome>); #read first line (not part of seq)
     $genpos=1;
     $gene_chr=$chr;
-    print STDERR $chr,"\n";
+    print STDERR "$chr ";
 }
 
-
+#for each strand
 for my $strand ('+','-'){
 
     open my $annoteFH, $annotationfile  or die "Cannot read gene file: $!\n";
-    $gene_chr=1;
+    $gene_chr=$default_chrom;
     openchr $gene_chr;
     my $intergen="";
 
@@ -54,7 +71,7 @@ for my $strand ('+','-'){
 	print <$genome>; 
 
 	#open the next chrm
-	openchr $chrom 
+	openchr $chrom;
      }
 
 
@@ -89,9 +106,12 @@ for my $strand ('+','-'){
        $intergen =~ tr/ATGCatgc/TACGtacg/;
        $intergen = reverse $intergen;
      }
+
+     #dump the sequence, and reset
      print $intergen,"\n";
      $intergen="";
    }#end gene annotation file
+   print STDERR "\n";
    close $annoteFH;
 }#end for each strand
 close $genome;
