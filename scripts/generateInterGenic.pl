@@ -50,6 +50,7 @@ sub openchr{
 
 #for each strand
 for my $strand ('+','-'){
+    print STDERR "$strand "; #for status update
 
     open my $annoteFH, $annotationfile  or die "Cannot read gene file: $!\n";
     $gene_chr=$default_chrom;
