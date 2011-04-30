@@ -2,29 +2,18 @@
 use strict; use warnings;
 
 sub USEAGE() {
-    print "Usage: $0 -l length\n";
-    print "optional: -e extra_print[''] -v length_varienc[2] -p percentID[98] -c chromregex[Pf3D7_(\\d+)]\n";
+    print "Usage: blastoutput | $0 \n";
+    print "optional: -p min_percentID -l min_length\n";
     exit
 }
 
 use Getopt::Std;
-my %opt=('v'=>2,'p'=>98,e=>'',c=>'psu\|Pf3D7_(\d+)');
-getopts('v:p:l:e:c:',\%opt);
+%opt=('p'=>-1,'l'=>-1);
+getopts('p:l:',\%opt);
 
-USEAGE() if(!defined($opt{'l'}));
-
-my $LEN=$opt{'l'};
-my $EXTRA=$opt{'e'};
-
-my $var=$opt{'v'}; #set to 1 for exact length only
-my $per=$opt{'p'};
-my $chromregex=$opt{'c'};
-
-my $chr=1;
 my $seq;
 my $start=0;
 my $end=0;
-my @cont_bits;
 
 my $id=0; my $l=0; my $gap=0;
 
@@ -64,7 +53,7 @@ while(<>) {
       #	   push @cont_bits, length($&);
       #}   
      #print "$id, ",$LEN-$l,", chr$chr:$start-$end \t($EXTRA)\n" if($l>$LEN-$var && $id>=$per && $cont_bits[0]>=$l/3 && $#cont_bits<3 );
-     print join("\t",$seq, $id,$start, $end,$l,$align),"\n" unless $chr==0;
+     print join("\t",$seq, $id,$start, $end,$l,$align),"\n" unless ($l<$opt{'l'} || $id<$opt{'p'});
     }
     else { 
 	#slip line
