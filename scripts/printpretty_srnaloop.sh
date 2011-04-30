@@ -2,10 +2,10 @@
 
 PROJECTDIR='/afs/andrew.cmu.edu/usr19/wforan1/project/';
 
-if [ ! -n "$1" ]; then
- echo "$0 srnaloopoutput.txt"
- exit;
-fi
+#if [ ! -n "$1" ]; then
+# echo "$0 srnaloopoutput.txt"
+# exit;
+#fi
 
 function blastit(){
     seq=$1;
@@ -28,21 +28,22 @@ perl -ne 'chomp;
 	else{ }
 	' $1 |sort -k 1,1n -k 2,2n -k 6,6n  |  #10;chr1:66050-71857 5131 75 30 TATA... ATGTA...
 perl -ne '
-INIT{ @line=("initialization",0,0,0,0); $end=0;  $dist=15;}
+INIT{ @line=("initialization",0,0,0,0); $end=0;$len=0;  $dist=15;}
   my @newline = split /\s/;
 
-  if($line[0] ne $newline[0] || $end+$dist<$newline[1]){
+  if($line[0] ne $newline[0] || $end+$len<$newline[1]){
    print join(" ",@line),"\n" unless $line[0] eq "initialization";
    @line=@newline; #update line b/c its a new region
   } 
-  elsif($newline[2]>$line[2]){
+  elsif($newline[3]>$line[3]){
     @line=@newline; #update line b/c this has a better score
   }
   else{
     #do nothing?
     #but update end; done for all
   }
-  $end=$line[1];'  #unstuttered output
+  $end=$line[1];
+  $len=$line[2];'  #unstuttered output
   
 #| #blast these for targets
 #while read id pos len score mirna mirstar; do
