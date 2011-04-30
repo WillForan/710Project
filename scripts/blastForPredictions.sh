@@ -3,15 +3,21 @@
 #
 # take unstuttered srnaoutput and pass the rev complement of the miRNA to blast  
 #
+#./blastForPredictions.sh ../data/predict/plasmo_srna_unstuttered.txt | tee ../data/predict/plasmo_srnaWithEnergy.txt
+#./blastForPredictions.sh ../data/predict/celg_srna_unstuttered.txt | tee ../data/predict/celg_srnaWithEnergy.txt
 
 
 PROJECTDIR='/home/wforan1/pj/';
+#UTRDB=$PROJECTDIR/data/blastdbs/plasmoUTRs; 
+UTRDB=$PROJECTDIR/data/blastdbs/celUTRs; 
+
 #SRNADATA=$PROJECTDIR/data/predict/plasmo_srna_unstuttered.txt
-if [ -n $1 ]; then
+if [ -n "$1" ]; then
  SRNADATA=$1;
 else
  echo "USEAGE: $0 srnaloop_unstuttered"
- echo "output blast hits"
+ echo "writes to utrblast and mirblast files for seq where energy criteria is met"
+ echo "tee to energy file to save energies"
  exit;
 fi
 #1;chr1:1-11513 10270 110 33 GTTATGTCACTCATGATGTTAGTGATGTTGTTAGTAGTCATGTAAGTAGTCAT TAGTACAGACTGTACTGACGATTGTAATGATGATTGTACTGATTCTTGTA
@@ -20,8 +26,8 @@ function blastUTR(){
   seq=$1;
   name=$2;
   len=${#seq};
-  echo $seq|  $PROJECTDIR/bin/blastn -db $PROJECTDIR/data/blastdbs/plasmoUTRs -dust no -word_size $(($len/3 -2)) |
- $PROJECTDIR/scripts/pB.pl -l $len -e $name  
+  echo $seq|  $PROJECTDIR/bin/blastn -db $UTRDB -dust no -word_size $(($len/3 -2)) |
+ $PROJECTDIR/scripts/pB.pl -l $(($len-$len/8)) -e $name  
 }
 function wholeSeq(){
   len=$1
@@ -41,24 +47,23 @@ function energy(){
 }
 
 org=$(basename $1 _srna_unstuttered.txt);
-if [ -e ../data/predict/${org}_utr ]; then
- echo remove file ../data/predict/${org}_utr then run
+if [ -e ../data/predict/${org}_utrblast ]; then
+ echo remove file ../data/predict/${org}_utrblast then run
  exit
 fi;
-awk -F' ' '{print $1,$2,$3,$5,$6}' $SRNADATA |while read name number length seq1 seq2; do
- #echo -n '.'
- #blastUTR $seq1 ${name}-${number} >> ../data/predict/_utr
- #blastUTR $seq2 ${name}-${number} >> ../data/predict/_utr
- #blastMB $seq1$seq2 ${name}_${number} #> ../data/predict/_mirblast
+if [ -e ../data/predict/${org}_mirblast ]; then
+ echo remove file ../data/predict/${org}_mirblast then run
+ exit
+fi;
+cat $SRNADATA |while read name number length score seq1 seq2; do
  seq=$(wholeSeq $length ${name} ${number});
  energy=$(energy $seq);
  if [ $energy -lt -18 ]; then
-    echo $energy $name;
+    echo $energy $name $number $length $score;# >> ../data/predict/${org}_srnaloop_withenergy.txt; #pipe to tee instead
     blastUTR $seq1 ${name}_${number} >> ../data/predict/${org}_utrblast
     blastUTR $seq2 ${name}_${number} >> ../data/predict/${org}_utrblast
-    #blastSeq $seq 		     >> ../data/predict/${org}_mirblast
+    blastSeq $seq 		     >> ../data/predict/${org}_mirblast
 
  fi
- #blastSeq $seq #> ../data/predict/_mirblast
 
 done
