@@ -42,8 +42,10 @@ INIT{ @line=("initialization",0,0,0,0); $end=0;  $dist=15;}
     #do nothing?
     #but update end; done for all
   }
-  $end=$line[1];' | #blast these for targets
-while read id pos len score mirna mirstar; do
- blastit $mirna "$id-$pos"
- blastit $mirstar "$id-*$pos"
-done
+  $end=$line[1];'  #unstuttered output
+  
+#| #blast these for targets
+#while read id pos len score mirna mirstar; do
+# blastit $mirna "$id-$pos"
+# blastit $mirstar "$id-*$pos"
+#done
