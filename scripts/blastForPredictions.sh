@@ -5,20 +5,35 @@
 #
 
 
-PROJECTDIR='/afs/andrew.cmu.edu/usr19/wforan1/project/';
-SRNADATA=$PROJECTDIR/bridge/srna_unstuttered.txt
-function posFromSrnaloopOutput(){
- #take 10;chr#:##-### pos_in_fasta 5/3 length  score
- #print chr#:###-### for both ends
+PROJECTDIR='/home/wforan1/pj/';
+SRNADATA=$PROJECTDIR/data/predict/plasmo_srna_unstuttered.txt
+if [ -n $1 ]; then
+ SRNADATA=$1;
+else
+ echo "USEAGE: $0 srnaloop_unstuttered"
+ echo "output blast hits"
+ exit;
+fi
+#1;chr1:1-11513 10270 110 33 GTTATGTCACTCATGATGTTAGTGATGTTGTTAGTAGTCATGTAAGTAGTCAT TAGTACAGACTGTACTGACGATTGTAATGATGATTGTACTGATTCTTGTA
 
- awk -v m=$1 -F'[ ;:-]' '{s=$3-$5;e=s+$7; print $2 ":" s "-" s+m "\t" $7; print $2 ":" e-m "-" e "\t" $7}' $SRNADATA
+function blastUTR(){
+  seq=$1;
+  name=$2;
+  len=${#seq};
+  echo $seq|  $PROJECTDIR/bin/blastn -db $PROJECTDIR/data/blastdbs/plasmoUTRs -dust no -word_size $(($len/3 -2)) |
+ $PROJECTDIR/scripts/pB.pl -l $len -e $name  
 }
-#
-
-miRNASize=22
-#blast for miRNA targets
-posFromSrnaloopOutput $miRNASize | head |while read pos len; do
- $PROJECTDIR/scripts/seq.pl $pos | tr ATCG TAGC|rev |
- blastn -db $PROJECTDIR/data/blastdbs/pf7 -dust no -word_size $(($len/3 -2)) |
- ../scripts/parseBlast.pl 22 $pos
+function blastMB(){
+  seq=$1;
+  name=$2;
+  len=${#seq};
+  echo $seq|  $PROJECTDIR/bin/blastn -db $PROJECTDIR/data/blastdbs/mirbase -dust no -word_size $(($len/3 -2)) |
+ $PROJECTDIR/scripts/pB.pl -l $(($len-$len/8)) -e $name  -p 90
+}
+awk -F' ' '{print $1,$2,$5,$6}' $SRNADATA |while read name number seq1 seq2; do
+ #echo -n '.'
+ #blastUTR $seq1 ${name}-${number} >> ../data/predict/_utr
+ #blastUTR $seq2 ${name}-${number} >> ../data/predict/_utr
+ blastMB $seq1$seq2 ${name}_${number} #> ../data/predict/_mirblast
 done
+echo 

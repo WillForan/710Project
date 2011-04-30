@@ -4,18 +4,20 @@ use strict; use warnings;
 sub USEAGE() {
     print "Usage: blastoutput | $0 \n";
     print "optional: -p min_percentID -l min_length\n";
-    exit
+    exit;
 }
 
 use Getopt::Std;
-%opt=('p'=>-1,'l'=>-1);
-getopts('p:l:',\%opt);
+my %opt=('p'=>-1,'l'=>-1);
+getopts('p:l:e:',\%opt);
 
 my $seq;
 my $start=0;
 my $end=0;
 
 my $id=0; my $l=0; my $gap=0;
+
+my $extra=exists($opt{'e'})?$opt{'e'}."\t":"";
 
 while(<>) {
     #if(/^> $chromregex/){
@@ -32,7 +34,6 @@ while(<>) {
     elsif(/^Query[^=]/){
      $start=0;
      $end=0;
-     @cont_bits=();
      my $align="";
      $_=<>;
      while(/(Query)|(Sbjct)|(\|+)|(^$)/){
@@ -53,7 +54,10 @@ while(<>) {
       #	   push @cont_bits, length($&);
       #}   
      #print "$id, ",$LEN-$l,", chr$chr:$start-$end \t($EXTRA)\n" if($l>$LEN-$var && $id>=$per && $cont_bits[0]>=$l/3 && $#cont_bits<3 );
-     print join("\t",$seq, $id,$start, $end,$l,$align),"\n" unless ($l<$opt{'l'} || $id<$opt{'p'});
+
+     print $extra,
+     	  join("\t",$seq, $id,$start, $end,$l,$align),"\n" 
+       unless ($l<$opt{'l'} || $id<$opt{'p'});
     }
     else { 
 	#slip line
