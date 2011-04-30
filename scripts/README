@@ -2,38 +2,54 @@ Pipeline and Utilities
 710 Project
 jvendrie, wforan1
 
+0.1) _getAnnotations.sh:	download and parse genome+annotations
+0.2) generateInterGenic.pl:	create intergenic fasta
+
 #########srnaloop pipeline##################
-1) _getAnnotations.sh:		download and parse genome+annotations
-2) generateInterGenic.pl:	create intergenic fasta
-3) miRNA canidates:		srnaloop -s 30 -sf infile -o outfile	
-				srnaloop -s 30 -sf plasmo_intergenic.fasta -o srnal_s30.txt 
-				srnaloop -s 30 -sf cel_intergenic.fasta    -o srnal_s30.txt 
-4) srna_display_results.sh	run sranloop parser
-5) srna_unstutter.pl		unstutter output ---miRNA candidates
-6) ??				generate random seqs of same length
+1) runsrnaloop.sh:		srnaloop -s 23 -t 70 -sf infile -o outfile for each org
+2) printpretty_srnaloop.sh:	reformat and unstutter output
+3) blastForPredictions.sh:	find min energy (-18) and blast mirbase and utrs
+				utrblast gets "predictions"
+				mirblast gets hits to mirbase
+				tee to *WithEnergy for refined list
+
+#########Novomir pipeline##################
+1) foldForNovomir.sh:		local fold across intergenic region, keep max nt len 110 w/min energy < -20
+2) novomir:			novomir -s infile
 
 
-#######candidate pipeline#######
-7) blast miRBase, mircheck
+#######un implemented #######
+*) refine predictions
+*) report target coverage per stage
 
-8) blast genome for reverse complement, maybe other target prediction software
-
-9) report target coverage per stage
 
 ##### Description of all scripts
 
+
+_getAnnotations.sh 	 -- history of how gene annotation was aquired (c ela, p fal)
+bioblast.pl		 -- FAIL  no bioperl on afs (and time wasted trying to bring it over)
+blastForPredictions.sh	 -- Use blast (utrs and mirbase) and RNAfold (<-18kcal/mol) on canidates from srnaloop
 breakbychrom.sh		 -- create chr*.fa from pf7.fa
-cel_srnaloop.sh		 -- run srnaloop on each chromosome of c. elgans	
-el2seq.pl		 -- get seq from position of c. elgans
+cel_srnaloop.sh		 -- ANTIQUATED (use intergenic region instead) run srnaloop on each chromosome of c. elgans	
+foldForNovomir.sh	 -- workhourse, find sequences for novomir
 freq_hairpin_length.sh	 -- get freq of lengths in miRBase hairpin fa
+genUTRRegionSearch.sh	 -- create intergenic fasta for makeblastdb
 generateInterGenic.pl	 -- make intergenic region fasta file given genome and gene annotation (plasmo)
 getElegansFromMiRBase.sh -- generate celgans_hairpins from miRbase
-mirnaPrecits.sh		 -- srna usage examle
-pos2seq.pl		 -- get seq from position of p. falc.
+getLengthDist.pl	 -- length distributions in unstuttered srnaloop outputs (for random seq generation)
+getregion.sh		 -- ANTIQUATED (replaced by _getAnnotations.sh) other method for getting sequences
+isInGene.pl		 -- reports if position is intergenic
+mirnaPrecits.sh		 -- ANTIQUATED (replaced by runsrnaloop) srna usage examle
+pB.pl			 -- parse blast output to be easy for coreutils
+parseBlast.pl		 -- ANTIQUATED (replaced by pB.pl)
+printpretty_srnaloop.sh	 -- format and unstutter srna output 
 randomStuff.pl		 -- get seq from position of either organism (c ela, p fal)
-readstuff.pl		 -- count sequences?
-RNALfold_wrap.sh	 -- Run RNALfold on celg
-_getAnnotations.sh 	 -- history of how gene annotation was aquired (c ela, p fal)
-srna_display_results.sh	 -- parse srna results to eye friendly and scripts
-srna_unstutter.pl	 -- pick best read from stuttered reads
+rnalfold_unstutter.pl    -- helper for foldForNovomir.sh 
+RNALfold_wrap.sh	 -- ANTIQUATED (replaced by foldForNovomir.sh) Run RNALfold on celg
+runsrnaloop.sh		 -- wraps srnaloop for both orgs. 
+seq.pl			 -- get sequence from position (chrX:##-###) org. indep.  (replaces el2seq.pl and pos2seq.pl)
+srna_display_results.sh	 -- ANTIQUATED (replaced by printpretty_srnaloop.sh) parse srna results to eye friendly and scripts
+srna_unstutter.pl	 -- ANTIQUATED (replaced by printpretty_srnaloop.sh) pick best read from stuttered reads
 test-novomir.sh		 -- novomir stats and param options
+test_intergenout.sh	 -- Sanity check on output (reported vs printed)
+
