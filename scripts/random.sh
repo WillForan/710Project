@@ -6,20 +6,20 @@
 #USAGE: echo 5 30 | ./random.sh ../data/genome/plasmo_intergenic.fasta
 #
 # cut -f3 -d' ' ../data/predict/plasmo_srna_unstuttered.txt |sort -nr|uniq -c | ./random.sh ../data/genome/plasmo_intergenic.fasta > plasmo_srnaloop_random.fa
-# cut -f3 -d' ' ../data/predict/celg_srna_unstuttered.txt |sort -nr|uniq -c | ./random.sh ../data/genome/celg_intergenic.fasta > celg_srnaloop_random.fa
+# cut -f3 -d' ' ../data/predict/celg_srna_unstuttered.txt |sort -nr|uniq -c | ./random.sh ../data/genome/cel/celg_intergenic.fasta > celg_srnaloop_random.fa
 #
 # ./example_parseNovomir.pl ../data/predict/plasmo_novoout.txt |sort -nr|uniq -c > plasmo_novo_random.fa
 # ./example_parseNovomir.pl ../data/predict/celg_novoout.txt |sort -nr|uniq -c   > celg_novo_random.fa
 
 FILE=$1; #input file
-SIZE=100; #Max size of two reads (120 for plasmo)
+SIZE=150; #Max size of two reads (180 for plasmo)
 WC=$(wc -l $FILE|cut -f1 -d ' ');
 
 #get two lines (as one) from intergenic file ( only one if happens to hit '>' line)
 function rndline(){
 awk \
       -v num=$(( $RANDOM % $WC +1)) \
-      '(NR==num || NR==num+1){ 
+      '(NR==num || NR==num+1 || NR==num+2){ 
       	if(/^>/ || /^$/){ num=num+1 } 
       	else {print} 
       }' $FILE |
