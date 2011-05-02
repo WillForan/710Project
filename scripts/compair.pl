@@ -35,6 +35,7 @@ sub countorg(){ #via parseBlast.pm
     }
 }
 
+
 sub blastUTRs(){ #via parseBlast.pm
 
     #set length minimum
@@ -42,13 +43,18 @@ sub blastUTRs(){ #via parseBlast.pm
 
     my @hits=blast(\%blastOpts);
 
+    my $count=0;
+
     for my $hit (@hits){
-	my $name= join (' ', (split /\s/, $hit->{'name'})[3,4] );
+        if($hit->{'align'}=~/^\|{7,}.*\|{7,}$/) {
+	    #print Dumper($hit),"\n";
+	    $count++;
+	}
 	#print join("\t", $name, $hit->{'percent'}, $hit->{'align'}), "\n";
-	$orgs{$name}+=1;
 	#print STDERR "(hit $name)\n";
 	#print Dumper($hit),"\n";
     }
+    print $count,"\n";# if $count;
 }
 sub novomirbase{ #via parseNovomir.pm via novomir via foldfornovomir.sh
     %orgs=();
@@ -82,6 +88,7 @@ sub randomirbase{ #via random.sh
 }
 sub srnaloopmirbase{
     my $srnaloopout=shift;
+    my $func=shift;
     %orgs=();
     open my $fh, $srnaloopout or die "cannot open $srnaloopout: $!\n";
     while(<$fh>){
@@ -94,13 +101,82 @@ sub srnaloopmirbase{
 	#likely error in reporting 'rest'
 	if ($s<$e || $e eq 'rest') { $r->{'s'} =  $s + $pos;   $r->{'e'} =  $r->{'s'} + $len }
 	else       { $r->{'s'} =  $s - $pos;   $r->{'e'} =  $r->{'s'} - $len }
+	
 
 	$blastOpts{'seq'}= getseqfrom($r);
 	
-	countorg;
+	countorg; # count number of organisms hit
     }
     close($fh);
     #print "\tsrnaloop to mirbase:\n";
+    print  "\t\t$_: $orgs{$_}\n" for keys %orgs;
+}
+
+###UTRS
+sub revcomp {
+  my @seqs;
+  while($_=shift){
+      tr/ATGCatgc/TACGtacg/;
+      push @seqs, reverse $_
+  }
+  return @seqs;
+}
+sub srnalooputr{
+    my $srnaloopout=shift;
+    my $func=shift;
+    %orgs=();
+    open my $fh, $srnaloopout or die "cannot open $srnaloopout: $!\n";
+    while(<$fh>){
+        #3;chr1:19516-27333 2039 69 24 AGACCTATATTAGTGAATGTAAGGTCTAAGTT TCTGGAATGTAAGTGATTATATCCAGAATTCAG
+	chomp;
+	my ($mir, $mirstar)=revcomp( (split / /)[4,5] );
+
+	
+	#get actual genomic position
+	#likely error in reporting 'rest'
+	
+
+	$blastOpts{'seq'}= $mir;
+	blastUTRs;
+	$blastOpts{'seq'}= $mirstar;
+	blastUTRs;
+	
+	#countorg; # count number of organisms hit
+    }
+    close($fh);
+    #print "\tsrnaloop to mirbase:\n";
+    print  "\t\t$_: $orgs{$_}\n" for keys %orgs;
+}
+sub novomirutr{ #via parseNovomir.pm via novomir via foldfornovomir.sh
+    my $novofile=shift; #'/home/wforan1/pj/data/predict/plasmo_novoout.txt';
+
+    my @mirs=parseNovomir($novofile);
+    for my $mir (@mirs){
+	#print STDERR ". ";
+	
+        #only use first position 
+	my ($start, $end) = @{$mir->{'pos'}[0]};
+	$blastOpts{'seq'}= substr($mir->{'seq'},$start,$end-$start+1 );
+	blastUTRs;
+
+    }
+}
+my @utrlengths=(19,20,20,20,20,20,21,21,21,21,21,21,21,22,22,22,22,23,23,23,23,24);
+sub random_cheat{
+    return $utrlengths[int(rand($#utrlengths))];
+}
+
+sub randomutr #via random.sh
+    my $randfile=shift;
+    %orgs=();
+    open my $fh, $randfile or die "cannot open $randfile: $!\n";
+    while(<$fh>){
+	next if(/^>/); #this is not the sequence you are looking for
+	chomp;
+	$blastOpts{'seq'}= substr($_,1,random_cheat());
+    }
+    close($fh);
+    #print "\twith random length to mirbase:\n";
     print  "\t\t$_: $orgs{$_}\n" for keys %orgs;
 }
 
@@ -130,9 +206,12 @@ sub srnaloopmirbase{
 #srnaloopmirbase("$PROJECTDIR/data/predict/celg_srna_unstuttered.txt");
 #print "\tRandom (srnaloop length):\n";
 #randomirbase("$PROJECTDIR/data/genome/cel/celg_srnaloop_random.fa");
-$blastOpts{'db'} = "$PROJECTDIR/data/blastdbs/mirbase";
+$blastOpts{'db'} = "$PROJECTDIR/data/blastdbs/plasmoUTRs";
 $blastOpts{'p'}  = 90;
-$blastOpts{'lenfrac'}=2/3;
+$blastOpts{'lenfrac'}=1;
+#srnalooputr("$PROJECTDIR/data/predict/plasmo_srna_unstuttered.txt");
+novomirutr("$PROJECTDIR/data/predict/plasmo_novoout.txt");
+randomutr("$PROJECTDIR/data/genome/cel/celg_srnaloop_random.fa");
 
 
 exit;
