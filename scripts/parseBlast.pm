@@ -2,6 +2,14 @@
 use strict; use warnings;
 use Carp;
 
+#return array of hash refs e.g.
+#'length' => '60',
+#'align' => '||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||',
+#'percent' => '100',
+#'name' => '> cel-let-7 MI0000001 Caenorhabditis elegans let-7 stem-loop',
+#'start' => '1',
+#'end' => '60'
+
 sub blast{
     my %opt=%{$_[0]};
      
